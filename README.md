@@ -7,7 +7,7 @@ Claude のスキルを 1 箇所で管理し、2 台の Mac と 2 つの claude.a
 | プラグイン | 中身 | 配布先 |
 |---|---|---|
 | `pr-flow` | be-pr-create, fe-pr-create | Mac のみ（git を触るため） |
-| `studio` | web-image-builder, icon-builder, eli15 | Mac + 会社/個人アカウント |
+| `studio` | web-image-builder, icon-builder, eli15, paas-onboarding | Mac + 会社/個人アカウント |
 
 分割の軸は「機能」ではなく **誰に配るか**。アカウントへ上げるのは `studio` だけで済む。
 
@@ -40,7 +40,7 @@ make release        # dist/studio.plugin ができる
 ```
 
 `dist/studio.plugin` を **Customize > Plugins** に上げる。会社と個人で1回ずつ、計2回。
-中に studio の3本が入っているので、これ1ファイルで済む。
+中に studio の4本が入っているので、これ1ファイルで済む。
 
 `pr-flow` は手元の git を触るので、アカウントには上げない。Mac 側の自動更新だけで足りる。
 

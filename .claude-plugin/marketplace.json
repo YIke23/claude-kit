@@ -1,0 +1,16 @@
+{
+  "name": "yike-kit",
+  "owner": { "name": "YIke" },
+  "plugins": [
+    {
+      "name": "pr-flow",
+      "source": "./plugins/pr-flow",
+      "description": "BE/FE の Pull Request をブランチ名と git diff から自動作成する"
+    },
+    {
+      "name": "studio",
+      "source": "./plugins/studio",
+      "description": "画像・アイコン生成と、新書レベルの解説記事づくり"
+    }
+  ]
+}

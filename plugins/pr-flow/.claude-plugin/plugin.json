@@ -1,5 +1,0 @@
-{
-  "name": "pr-flow",
-  "description": "BE/FE の Pull Request をブランチ名と git diff から自動作成する",
-  "author": { "name": "YIke" }
-}

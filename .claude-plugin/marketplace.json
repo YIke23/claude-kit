@@ -1,16 +1,33 @@
 {
   "name": "yike-kit",
-  "owner": { "name": "YIke" },
+  "owner": {
+    "name": "YIke"
+  },
+  "metadata": {
+    "description": "YIke の自作スキル。Mac には plugin marketplace 経由、claude.ai アカウントには dist/*.plugin を手で配る。"
+  },
   "plugins": [
     {
-      "name": "pr-flow",
-      "source": "./plugins/pr-flow",
-      "description": "BE/FE の Pull Request をブランチ名と git diff から自動作成する"
+      "name": "studio",
+      "description": "画像・アイコン生成、PaaS 導入ガイド、新書レベルの解説記事づくり",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/web-image-builder",
+        "./skills/icon-builder",
+        "./skills/eli15",
+        "./skills/paas-onboarding"
+      ]
     },
     {
-      "name": "studio",
-      "source": "./plugins/studio",
-      "description": "画像・アイコン生成と、新書レベルの解説記事づくり"
+      "name": "pr-flow",
+      "description": "BE/FE の Pull Request をブランチ名と git diff から自動作成する",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/be-pr-create",
+        "./skills/fe-pr-create"
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-# yike-kit
+# skills
 
 Claude のスキルを 1 箇所で管理し、2 台の Mac と 2 つの claude.ai アカウントへ配るリポジトリ。
 構成は [anthropics/skills](https://github.com/anthropics/skills) に合わせてある。
@@ -22,10 +22,14 @@ scripts/                          アカウント配布用のビルドと、push
 
 呼び出しは `/studio:eli15` のように `プラグイン名:スキル名` になる。
 
+リポジトリ名は `skills`、marketplace 名は `yike-kit` で、意図的に別にしてある。
+プラグイン ID が `studio@yike-kit` の形になるのはこのため。
+anthropics/skills も同じく `anthropic-agent-skills` という別名を持つ。
+
 ## Mac への導入（各マシンで 1 回）
 
 ```bash
-claude plugin marketplace add git@github.com:<you>/claude-kit.git
+claude plugin marketplace add git@github.com:YIke23/skills.git
 claude plugin install studio@yike-kit
 claude plugin install pr-flow@yike-kit
 ```
@@ -60,7 +64,7 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 
 ## スキルを追加・更新する
 
-`main` へ直接 push しない。ブランチを切って PR を出し、GitHub でマージする。
+**`main` へは直接 push できない。** ブランチを切って PR を出し、GitHub でマージする。
 PR では CI が `make check` を走らせるので、壊れた SKILL.md が main に入らない。
 
 ```bash
@@ -74,6 +78,28 @@ gh pr create
 ```
 
 check が緑になったら GitHub でマージする。マージ後の反映は次節。
+
+直接 push しようとすると GitHub 側で弾かれる。ルールセットによる強制で、
+管理者バイパスは付けていないので自分自身も例外ではない。
+
+```
+remote: - Changes must be made through a pull request.
+remote: - Required status check "check" is expected.
+ ! [remote rejected] main -> main
+```
+
+main に入るには次の 4 つが揃っている必要がある。
+
+| ルール | 意味 |
+|---|---|
+| `pull_request` | PR 経由でしか変更できない（承認者数は 0 なので一人で回せる） |
+| `required_status_checks` | CI の `check` が緑であること。ブランチが最新の main に追いついていること |
+| `non_fast_forward` | force push で履歴を壊せない |
+| `deletion` | main を消せない |
+
+事故対応などでどうしても直接 push が要るときは、GitHub の
+**Settings > Rules > Rulesets** から該当ルールセットを開き、Enforcement status を
+Disabled にする。作業が終わったら Active に戻す。**戻し忘れないこと。**
 
 `make check` は SKILL.md の `name` とフォルダ名の一致、`description` の有無と長さ、
 どのプラグインにも属していないスキルを見る。description が 1536 字を超えると

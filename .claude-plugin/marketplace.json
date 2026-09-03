@@ -1,5 +1,5 @@
 {
-  "name": "yike-kit",
+  "name": "yike-skills",
   "owner": {
     "name": "YIke"
   },
@@ -20,13 +20,16 @@
       ]
     },
     {
-      "name": "pr-flow",
-      "description": "BE/FE の Pull Request をブランチ名と git diff から自動作成する",
+      "name": "git-flow",
+      "description": "ブランチ作成・コミット・PR 作成・Issue 起票まで、git と GitHub まわりの定型作業",
       "source": "./",
       "strict": false,
       "skills": [
+        "./skills/create-branch",
+        "./skills/git-commit",
         "./skills/be-pr-create",
-        "./skills/fe-pr-create"
+        "./skills/fe-pr-create",
+        "./skills/create-issue"
       ]
     }
   ]

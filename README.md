@@ -18,20 +18,20 @@ scripts/                          アカウント配布用のビルドと、push
 | プラグイン | 中身 | 配布先 |
 |---|---|---|
 | `studio` | web-image-builder, icon-builder, eli15, paas-onboarding | Mac + claude.ai アカウント |
-| `pr-flow` | be-pr-create, fe-pr-create | Mac のみ（手元の git を触るため） |
+| `git-flow` | create-branch, git-commit, be-pr-create, fe-pr-create, create-issue | Mac のみ（手元の git を触るため） |
 
 呼び出しは `/studio:eli15` のように `プラグイン名:スキル名` になる。
 
-リポジトリ名は `skills`、marketplace 名は `yike-kit` で、意図的に別にしてある。
-プラグイン ID が `studio@yike-kit` の形になるのはこのため。
+リポジトリ名は `skills`、marketplace 名は `yike-skills` で、意図的に別にしてある。
+プラグイン ID が `studio@yike-skills` の形になるのはこのため。
 anthropics/skills も同じく `anthropic-agent-skills` という別名を持つ。
 
 ## Mac への導入（各マシンで 1 回）
 
 ```bash
 claude plugin marketplace add git@github.com:YIke23/skills.git
-claude plugin install studio@yike-kit
-claude plugin install pr-flow@yike-kit
+claude plugin install studio@yike-skills
+claude plugin install git-flow@yike-skills
 ```
 
 **SSH リモートを使うこと。** HTTPS だと最初の登録は通るのに、バックグラウンドの
@@ -60,9 +60,17 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 素の `/eli15` で呼びたい場合だけ `dist/skills/eli15.zip` を **Customize > Skills** に上げる。
 スキル 1 本 = zip 1 つなので、増やすほど手作業が増える。
 
-`pr-flow` はアカウントに上げない。手元の git を触るスキルなので使い道がない。
+`git-flow` はアカウントに上げない。手元の git を触るスキルなので使い道がない。
 
 ## スキルを追加・更新する
+
+新しいスキルは **`~/.claude/skills/<name>/` で書き始める。** そこに置いたスキルは
+保存した瞬間に効くので、試行錯誤が速い。プラグイン経由だと
+commit → PR → マージ → `plugin update` → 再起動を回さないと反映されない。
+
+形が固まったらこのリポジトリの `skills/` へ**移し**（コピーではなく移動。
+両方に残すと裸の `/git-commit` と `/git-flow:git-commit` が併存して紛らわしい）、
+`marketplace.json` の `skills` 配列に足して PR を出す。
 
 **`main` へは直接 push できない。** ブランチを切って PR を出し、GitHub でマージする。
 PR では CI が `make check` を走らせるので、壊れた SKILL.md が main に入らない。
@@ -112,9 +120,19 @@ Disabled にする。作業が終わったら Active に戻す。**戻し忘れ�
 更新して、セッションを再起動する。
 
 ```bash
-claude plugin marketplace update yike-kit
-claude plugin update studio@yike-kit
-claude plugin update pr-flow@yike-kit
+claude plugin marketplace update yike-skills
+claude plugin update studio@yike-skills
+claude plugin update git-flow@yike-skills
+```
+
+**marketplace 名やプラグイン名を変えたときだけは `plugin update` では追従しない。**
+登録キーが古い名前のままなので、一度消して入れ直す。
+
+```bash
+claude plugin marketplace remove <古い marketplace 名>
+claude plugin marketplace add git@github.com:YIke23/skills.git
+claude plugin install studio@yike-skills
+claude plugin install git-flow@yike-skills
 ```
 
 反映できたかは `plugin list` の SHA ではなく、**再起動後の新規セッションで

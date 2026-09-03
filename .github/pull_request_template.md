@@ -10,5 +10,5 @@
 
 ## マージ後にやること
 
-- [ ] Mac 2 台で `claude plugin update <plugin>@yike-kit` → 再起動
+- [ ] Mac 2 台で `claude plugin update <plugin>@yike-skills` → 再起動
 - [ ] claude.ai アカウントに配るなら `make build` して `dist/studio.plugin` を上げ直す

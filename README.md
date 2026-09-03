@@ -17,7 +17,7 @@ scripts/                          アカウント配布用のビルドと、push
 
 | プラグイン | 中身 | 配布先 |
 |---|---|---|
-| `studio` | web-image-builder, icon-builder, eli15 | Mac + claude.ai アカウント |
+| `studio` | web-image-builder, icon-builder, eli15, paas-onboarding | Mac + claude.ai アカウント |
 | `pr-flow` | be-pr-create, fe-pr-create | Mac のみ（手元の git を触るため） |
 
 呼び出しは `/studio:eli15` のように `プラグイン名:スキル名` になる。
@@ -51,7 +51,7 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 ```
 
 `dist/studio.plugin` を **Customize > Plugins** に上げる。会社と個人で 1 回ずつ、計 2 回。
-3 スキルが 1 ファイルに入っているので、これだけで済む。
+4 スキルが 1 ファイルに入っているので、これだけで済む。
 
 素の `/eli15` で呼びたい場合だけ `dist/skills/eli15.zip` を **Customize > Skills** に上げる。
 スキル 1 本 = zip 1 つなので、増やすほど手作業が増える。
@@ -60,15 +60,43 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 
 ## スキルを追加・更新する
 
-1. `skills/<name>/SKILL.md` を書く（`template/SKILL.md` をコピーして始める）
-2. 新規なら `marketplace.json` の `skills` 配列に `./skills/<name>` を足す
-3. `make check` で点検
-4. commit して push → Mac 2 台は自動で追いつく
-5. `make build` して `dist/studio.plugin` をアカウントに上げ直す
+`main` へ直接 push しない。ブランチを切って PR を出し、GitHub でマージする。
+PR では CI が `make check` を走らせるので、壊れた SKILL.md が main に入らない。
+
+```bash
+git switch -c skill/<name>
+# skills/<name>/SKILL.md を書く（template/SKILL.md をコピーして始める）
+# 新規なら marketplace.json の skills 配列に ./skills/<name> を足す
+make check
+git add -A && git commit -m "add: <name> スキルを追加"
+git push -u origin skill/<name>
+gh pr create
+```
+
+check が緑になったら GitHub でマージする。マージ後の反映は次節。
 
 `make check` は SKILL.md の `name` とフォルダ名の一致、`description` の有無と長さ、
 どのプラグインにも属していないスキルを見る。description が 1536 字を超えると
 切り捨てられて意図した場面で呼ばれなくなるため、ここで止める。
+
+## マージしたあとの反映
+
+**Mac は放っておいても追いつかない。** `marketplace update` は marketplace の複製を
+新しくするだけで、入っているプラグインの版は切り替わらない。各プラグインを明示的に
+更新して、セッションを再起動する。
+
+```bash
+claude plugin marketplace update yike-kit
+claude plugin update studio@yike-kit
+claude plugin update pr-flow@yike-kit
+```
+
+反映できたかは `plugin list` の SHA ではなく、**再起動後の新規セッションで
+`/studio:<skill>` が候補に出るか**で確かめる。`plugin validate` も `plugin details` も
+名前空間の問題は素通りするので、この 2 つを根拠にしない。
+
+claude.ai アカウントへ配るスキルを触ったなら、`make build` して
+`dist/studio.plugin` を上げ直す。
 
 ## 入れていないもの
 

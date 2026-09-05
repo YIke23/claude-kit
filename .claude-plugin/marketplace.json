@@ -13,10 +13,10 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./web-image-builder",
-        "./icon-builder",
-        "./eli15",
-        "./paas-onboarding"
+        "./skills/web-image-builder",
+        "./skills/icon-builder",
+        "./skills/eli15",
+        "./skills/paas-onboarding"
       ]
     },
     {
@@ -25,11 +25,11 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./create-branch",
-        "./git-commit",
-        "./be-pr-create",
-        "./fe-pr-create",
-        "./create-issue"
+        "./skills/create-branch",
+        "./skills/git-commit",
+        "./skills/be-pr-create",
+        "./skills/fe-pr-create",
+        "./skills/create-issue"
       ]
     }
   ]

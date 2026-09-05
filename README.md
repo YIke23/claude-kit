@@ -7,10 +7,18 @@ Claude のスキルを 1 箇所で管理し、2 台の Mac と 2 つの claude.a
 
 ```
 .claude-plugin/marketplace.json   どのスキルをどのプラグインに束ねるかの定義
-skills/<skill-name>/SKILL.md      スキル本体。1 フォルダ 1 スキル、フラットに並べる
-template/SKILL.md                 新しいスキルを作るときの雛形
-scripts/                          アカウント配布用のビルドと、push 前の点検
+<skill-name>/SKILL.md             スキル本体。ルート直下に 1 フォルダ 1 スキルで並べる
+scripts/                          配布用のビルドと push 前の点検。skill-template.md は雛形
 ```
+
+**スキルはルート直下に置く。** `skills/` の下にまとめない。Claude Code は
+「直下に `SKILL.md` を持つフォルダ」をスキルとして読むので、この形にしておくと
+リポジトリの作業ツリーをそのまま `~/.claude/skills` にできる。編集した瞬間に効く
+状態のまま、`make sync` で GitHub まで届く。
+
+`scripts/` と `dist/` はスキルではないので `SKILL.md` を置かないこと。置くと
+スキルとして登録されてしまう。雛形を `scripts/skill-template.md` という名前に
+してあるのはこのため。`make check` がこの 2 つを見張っている。
 
 スキルの所属はフォルダ構造ではなく `marketplace.json` の `skills` 配列で決まる。
 束ね方を変えたいときは JSON を直すだけでよく、ファイルは動かさない。
@@ -68,7 +76,7 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 保存した瞬間に効くので、試行錯誤が速い。プラグイン経由だと
 commit → PR → マージ → `plugin update` → 再起動を回さないと反映されない。
 
-形が固まったらこのリポジトリの `skills/` へ**移し**（コピーではなく移動。
+形が固まったらこのリポジトリのルート直下へ**移し**（コピーではなく移動。
 両方に残すと裸の `/git-commit` と `/git-flow:git-commit` が併存して紛らわしい）、
 `marketplace.json` の `skills` 配列に足して PR を出す。
 
@@ -77,8 +85,8 @@ PR では CI が `make check` を走らせるので、壊れた SKILL.md が mai
 
 ```bash
 git switch -c skill/<name>
-# skills/<name>/SKILL.md を書く（template/SKILL.md をコピーして始める）
-# 新規なら marketplace.json の skills 配列に ./skills/<name> を足す
+# <name>/SKILL.md を書く（scripts/skill-template.md をコピーして始める）
+# 新規なら marketplace.json の skills 配列に ./<name> を足す
 make check
 git add -A && git commit -m "add: <name> スキルを追加"
 git push -u origin skill/<name>

@@ -6,8 +6,7 @@ Mac 側は git から直接読むのでビルド不要。これはアカウン�
 """
 import json, pathlib, shutil, sys, zipfile
 
-from skilllib import ROOT, skill_dirs
-
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 MARKET = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
 
@@ -49,10 +48,9 @@ def main() -> None:
     if DIST.exists():
         shutil.rmtree(DIST)
     made = [build_plugin(p) for p in MARKET["plugins"]]
-    for skill in skill_dirs():
-        out = DIST / "skills" / f"{skill.name}.zip"
-        zip_dir(skill, out, skill.name)
-        made.append(out)
+    for skill in sorted((ROOT / "skills").iterdir()):
+        if skill.is_dir():
+            made.append(zip_dir(skill, DIST / "skills" / f"{skill.name}.zip", skill.name) or DIST / "skills" / f"{skill.name}.zip")
     shutil.rmtree(DIST / "_stage", ignore_errors=True)
     for p in made:
         print(f"{p.stat().st_size // 1024:>5} KB  {p.relative_to(ROOT)}")

@@ -34,6 +34,30 @@ scripts/                          配布用のビルドと push 前の点検。s
 プラグイン ID が `studio@yike-skills` の形になるのはこのため。
 anthropics/skills も同じく `anthropic-agent-skills` という別名を持つ。
 
+## 2 つの入れ方
+
+| | 置き方 | 反映 | 向き |
+|---|---|---|---|
+| 開発機 | `~/.claude/skills` がこのリポジトリの作業ツリー | 保存した瞬間 | スキルを書く・直すマシン |
+| その他 | plugin marketplace 経由 | `plugin update` + 再起動 | 使うだけのマシン |
+
+**同じマシンで両方やらないこと。** 作業ツリーが `/eli15` を、プラグインが
+`/studio:eli15` を出すので、同じスキルが二重に並ぶ。開発機にはプラグインを入れない。
+
+## 開発機のセットアップ（1 回だけ）
+
+```bash
+git clone git@github.com:YIke23/skills.git ~/.claude/skills
+make -C ~/.claude/skills hooks
+```
+
+`make hooks` は `core.hooksPath` を `.githooks` に向ける。以後 push のたびに
+`make check` が走り、`main` への直接 push は GitHub に届く前に手元で止まる。
+
+`~/.claude/skills` は動いている Claude がそのまま読んでいる。**ここでブランチを
+切り替えないこと。** 目の前でスキルが入れ替わる。`make sync` はそれを避けるため、
+ローカルを `main` に置いたまま push 先だけ別ブランチにする。
+
 ## Mac への導入（各マシンで 1 回）
 
 ```bash
@@ -72,28 +96,32 @@ make build          # dist/ に .plugin と skills/*.zip ができる
 
 ## スキルを追加・更新する
 
-新しいスキルは **`~/.claude/skills/<name>/` で書き始める。** そこに置いたスキルは
-保存した瞬間に効くので、試行錯誤が速い。プラグイン経由だと
-commit → PR → マージ → `plugin update` → 再起動を回さないと反映されない。
+開発機では `~/.claude/skills/<name>/SKILL.md` を直接書く。保存した瞬間に効くので
+試行錯誤が速い。雛形は `scripts/skill-template.md` をコピーして始める。
 
-形が固まったらこのリポジトリのルート直下へ**移し**（コピーではなく移動。
-両方に残すと裸の `/git-commit` と `/git-flow:git-commit` が併存して紛らわしい）、
-`marketplace.json` の `skills` 配列に足して PR を出す。
+新規なら `marketplace.json` の `skills` 配列に `./<name>` を足す。足し忘れは
+`make check` が WARN で拾う。
 
-**`main` へは直接 push できない。** ブランチを切って PR を出し、GitHub でマージする。
-PR では CI が `make check` を走らせるので、壊れた SKILL.md が main に入らない。
+形が固まったら GitHub へ送る。
 
 ```bash
-git switch -c skill/<name>
-# <name>/SKILL.md を書く（scripts/skill-template.md をコピーして始める）
-# 新規なら marketplace.json の skills 配列に ./<name> を足す
-make check
-git add -A && git commit -m "add: <name> スキルを追加"
-git push -u origin skill/<name>
-gh pr create
+make sync m="add: <name> スキルを追加"
 ```
 
-check が緑になったら GitHub でマージする。マージ後の反映は次節。
+`make sync` がやること。
+
+1. `main` にいることと、`origin/main` に遅れていないことを確かめる
+2. 作業ツリーを `m=` のメッセージでコミットする
+3. `sync/<日時>` ブランチとして push する（**ローカルは `main` のまま**）
+4. `gh pr create` → CI の `check` が緑になるのを待つ → `gh pr merge --merge`
+5. `git merge --ff-only origin/main` で手元を main の先端に合わせ、送ったブランチを消す
+
+マージは**必ずマージコミット方式**にしてある。squash や rebase だと GitHub 側で
+SHA が振り直され、手元のコミットが `origin/main` の祖先でなくなる。そうなると
+5 の `--ff-only` が通らず、作業ツリーが main から外れたまま取り残される。
+
+**`main` へは直接 push できない。** `make sync` が PR を経由するのはこのため。
+PR では CI が `make check` を走らせるので、壊れた SKILL.md が main に入らない。
 
 直接 push しようとすると GitHub 側で弾かれる。ルールセットによる強制で、
 管理者バイパスは付けていないので自分自身も例外ではない。
@@ -120,12 +148,17 @@ Disabled にする。作業が終わったら Active に戻す。**戻し忘れ�
 `make check` は SKILL.md の `name` とフォルダ名の一致、`description` の有無と長さ、
 どのプラグインにも属していないスキルを見る。description が 1536 字を超えると
 切り捨てられて意図した場面で呼ばれなくなるため、ここで止める。
+ルート直下に SKILL.md を持たないフォルダ、`scripts/` や `dist/` に紛れ込んだ
+SKILL.md もここで拾う。
 
 ## マージしたあとの反映
 
-**Mac は放っておいても追いつかない。** `marketplace update` は marketplace の複製を
-新しくするだけで、入っているプラグインの版は切り替わらない。各プラグインを明示的に
-更新して、セッションを再起動する。
+開発機は `make sync` の中で `--ff-only` まで済ませているので、何もしなくてよい。
+以下はプラグインで入れている側の話。
+
+**プラグイン側は放っておいても追いつかない。** `marketplace update` は marketplace の
+複製を新しくするだけで、入っているプラグインの版は切り替わらない。各プラグインを
+明示的に更新して、セッションを再起動する。
 
 ```bash
 claude plugin marketplace update yike-skills

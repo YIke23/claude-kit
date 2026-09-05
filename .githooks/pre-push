@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# main への直接 push を止め、push の前に make check を走らせる。
+# 有効化は各マシンで 1 回だけ: make hooks
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+	case "$remote_ref" in
+	refs/heads/main)
+		echo "pre-push: main へは直接 push できない。make sync m=\"...\" を使うこと。" >&2
+		exit 1
+		;;
+	esac
+done
+
+make check

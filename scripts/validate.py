@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """push 前の自己点検。marketplace.json と各 SKILL.md の整合を見る。"""
-import json, pathlib, re, sys
+import json, re, sys
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+from skilllib import INFRA, ROOT, skill_dirs
+
 errs, warns = [], []
 
 market = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
@@ -13,17 +14,22 @@ for p in market["plugins"]:
         if not (ROOT / rel / "SKILL.md").is_file():
             errs.append(f"{p['name']}: {rel}/SKILL.md がない")
 
-for d in sorted((ROOT / "skills").iterdir()):
-    if not d.is_dir():
+for name in sorted(INFRA):
+    if (ROOT / name / "SKILL.md").is_file():
+        errs.append(f"{name}/SKILL.md がある。スキルとして読まれるので置かないこと")
+
+for d in sorted(p for p in ROOT.iterdir() if p.is_dir() and not p.name.startswith(".")):
+    if d.name in INFRA or (d / "SKILL.md").is_file():
         continue
-    rel = f"./skills/{d.name}"
+    warns.append(f"{d.name}: SKILL.md が無いのでスキルとして読まれない")
+
+skills = skill_dirs()
+
+for d in skills:
+    rel = f"./{d.name}"
     if rel not in listed:
         warns.append(f"{d.name} はどのプラグインにも入っていない")
-    f = d / "SKILL.md"
-    if not f.is_file():
-        errs.append(f"{d.name}: SKILL.md がない")
-        continue
-    text = f.read_text(encoding="utf-8")
+    text = (d / "SKILL.md").read_text(encoding="utf-8")
     m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
     if not m:
         errs.append(f"{d.name}: フロントマターがない")
@@ -47,6 +53,5 @@ for w in warns:
     print(f"WARN  {w}")
 for e in errs:
     print(f"ERROR {e}")
-print(f"\nスキル {len([d for d in (ROOT/'skills').iterdir() if d.is_dir()])} 本 / "
-      f"プラグイン {len(market['plugins'])} 個 / エラー {len(errs)} 件")
+print(f"\nスキル {len(skills)} 本 / プラグイン {len(market['plugins'])} 個 / エラー {len(errs)} 件")
 sys.exit(1 if errs else 0)

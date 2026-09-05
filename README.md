@@ -44,6 +44,14 @@ anthropics/skills も同じく `anthropic-agent-skills` という別名を持つ
 **同じマシンで両方やらないこと。** 作業ツリーが `/eli15` を、プラグインが
 `/studio:eli15` を出すので、同じスキルが二重に並ぶ。開発機にはプラグインを入れない。
 
+すでに入っている開発機からは外す。marketplace の登録は残してよい。登録があっても、
+プラグインを入れていなければ二重にはならない。
+
+```bash
+claude plugin uninstall studio@yike-skills
+claude plugin uninstall git-flow@yike-skills
+```
+
 ## 開発機のセットアップ（1 回だけ）
 
 ```bash
